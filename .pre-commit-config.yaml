@@ -1,0 +1,15 @@
+exclude: ".git"
+default_stages: [commit]
+fail_fast: true
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: master
+    hooks:
+      - id: trailing-whitespace
+        files: (^|/).+\.(py|html|sh|css|js)$
+
+  - repo: https://github.com/ambv/black
+    rev: stable
+    hooks:
+      - id: black
