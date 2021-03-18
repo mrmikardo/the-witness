@@ -24,44 +24,32 @@ Y1 == Y2 :- edge(X1, Y1), edge(X2, Y2), X1 == X2.
 
 % a square/6 is defined by its ID, 4 vertices, and a colour.
 % the ID is the first member of the tuple.
-square(0,3,4,6,7, black). square(1,4,7,5,8, black).
-%square(1,1,4,2,5, black).
-
-% auxiliary predicate, used in definition of separate/2.
-in(ID, V1, V2) :- 1{
-                      square(ID,V1,_,_,_,_);
-                      square(ID,_,V1,_,_,_);
-                      square(ID,_,_,V1,_,_);
-                      square(ID,_,_,_,V1,_)
-                  },
-                  1{
-                      square(ID,V2,_,_,_,_);
-                      square(ID,_,V2,_,_,_);
-                      square(ID,_,_,V2,_,_);
-                      square(ID,_,_,_,V2,_)
-                  },
-                  vertex(V1),
-                  vertex(V2),
-                  V1 != V2,
-                  square(ID,_,_,_,_,_).
-
-% achieved: 2 squares ID1, ID2 are separated by any edge that
-% they share.
-separate(ID1, ID2) :- 1{edge(V1,V2); edge(V2,V1)},
-                      ID1 != ID2,
-                      in(ID1,V1,V2),
-                      in(ID2,V1,V2).
-
-% 2 squares are adjacent if they share 2 vertices (an edge).
+% vertices are numbered clockwise, from bottom-left
 %
-% TODO: find a better way to break the symmetry here.
-% This approach currently results in lots of redundant result sets.
-adjacent(ID1, ID2) :- square(ID1,_,_,_,_,_),
-                      square(ID2,_,_,_,_,_),
-                      in(ID1,V1,V2),
-                      in(ID2,V1,V2),
-                      ID1 != ID2,
-                      not adjacent(ID2, ID1).
+% e.g. square(1,0,3,4,1,black) denotes a black square
+% with an ID of 1, bounded by the vertices 0-3-4-1.
+%
+% this ordering of vertices is relied upon by adjacent/2.
+square(1,0,3,4,1, black). square(2,1,4,5,2, white).
+square(3,3,6,7,4, white). square(4,4,7,8,5, white).
+
+% achieved: 2 square are separate if they are adjacent and an edge
+% connects the adjacent vertices.
+separate(ID1, ID2) :- 1{edge(V1,V2); edge(V2,V1)},
+                      adjacent(ID1,ID2,V1,V2).
+
+% 2 squares ID1, ID2 are adjacent if they share ID1's top
+% edge or ID1's right edge (ID2's bottom and left edge, respectively).
+adjacent(ID1, ID2, V1_2, V1_3) :- square(ID1,V1_1,V1_2,V1_3,V1_4,_),
+                                  square(ID2,V2_1,V2_2,V2_3,V2_4,_),
+                                  V1_2 == V2_1,
+                                  V1_3 == V2_4,
+                                  ID1 != ID2.
+adjacent(ID1, ID2, V1_3, V1_4) :- V1_3 == V2_2,
+                                  V1_4 == V2_1,
+                                  square(ID1,V1_1,V1_2,V1_3,V1_4,_),
+                                  square(ID2,V2_1,V2_2,V2_3,V2_4,_),
+                                  ID1 != ID2.
 
 % TODO
 same_region(ID1, ID2) :- not separate(ID1, ID2),
