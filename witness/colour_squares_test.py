@@ -8,7 +8,7 @@ from typing import Dict, List, Tuple
 import pytest
 
 
-CLINGO_OUTPUT_DIR = Path(__file__).parents[0] / "output"
+CLINGO_OUTPUT_DIR = Path(__file__).parents[1] / "output"
 
 
 # parse terms from atoms
@@ -59,6 +59,15 @@ class SearchResult:
             if match and len(match.groups()) == 2:
                 edges.append((int(match.groups()[0]), int(match.groups()[1])))
         return edges
+
+    @property
+    def vertices(self) -> List[int]:
+        """ Returns a list of all of the vertices. """
+        vertices = []
+        for edge in self.edges:
+            vertices.append(edge[0])
+            vertices.append(edge[1])
+        return vertices
 
 
 def _parse_search_result(sr, ix):
@@ -112,11 +121,16 @@ ACCEPTABLE_EDGES = [
 ]
 
 
-def test_edge_generation_correctness(clingo_output):
+def test_edge_correctness(clingo_output):
     """
     A search result is incorrect if it contains edges
     not from the set of incorrect edges, or if it contains
     duplicate edges, or if it contains symmetrical edges.
+
+    No vertex should be included more than once, and the
+    result should have a single edge from the lowest-
+    numbered edge, and a single edge to the highest-numbered
+    edge.
     """
 
     for sr in clingo_output:
@@ -125,16 +139,46 @@ def test_edge_generation_correctness(clingo_output):
             assert (
                 edge in ACCEPTABLE_EDGES
             ), f"edge {edge} not in ACCEPTABLE_EDGES. Failing result was {sr}."
+
+            # test no two edges starting at the same vertex
+            assert (
+                len(list(filter(lambda e: e[0] == edge[0], sr.edges))) == 1
+            ), f"SearchResult {sr} contains multiple edges starting at {edge[0]}!"
+
+            # test no two edges ending at the same vertex
+            assert (
+                len(list(filter(lambda e: e[1] == edge[1], sr.edges))) == 1
+            ), f"SearchResult {sr} contains multiple edges terminating at {edge[1]}!"
+
         # test no duplicate edges
         assert len(sr.edges) == len(
             set(sr.edges)
         ), f"SearchResult {sr} contains duplicate edges."
+
         # test no symmetrical edges
         sorted_edges = list(map(lambda tup: tuple(sorted(tup)), sr.edges))
         assert len(sorted_edges) == len(
             set(sorted_edges)
         ), f"SearchResult {sr} contains symmetrical edges."
 
+        # test there is a single valid edge from vertex 0
+        # there are only 2 possible valid edges from vertex 0:
+        # (0,1) and (0,3).
+        assert (0, 1) in sr.edges or (
+            0,
+            3,
+        ) in sr.edges, f"SearchResult {sr} missing an edge from vertex 0."
+        assert not (
+            (0, 1) in sr.edges and (0, 3) in sr.edges
+        ), f"SearchResult {sr} contains 2 edges from vertex 0!"
 
-def test_edge_generation_completeness():
+        # test there is a single edge which terminates at
+        # the highest-numbered vertex in the set
+        greatest_vertex = max(sr.vertices)
+        assert (
+            len(list(filter(lambda e: e[1] == greatest_vertex, sr.edges))) == 1
+        ), f"SearchResult {sr} has no edge terminating at {greatest_vertex}."
+
+
+def test_edge_completeness():
     pass
