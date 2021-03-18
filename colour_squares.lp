@@ -52,18 +52,31 @@ separate(ID1, ID2) :- 1{edge(V1,V2); edge(V2,V1)},
                       in(ID1,V1,V2),
                       in(ID2,V1,V2).
 
-adjacent(ID1, ID2) :- not separate(ID1, ID2),
-                      square(ID1,_,_,_,_,_),
-                      square(ID2,_,_,_,_,_).
+% 2 squares are adjacent if they share 2 vertices (an edge).
+%
+% TODO: find a better way to break the symmetry here.
+% This approach currently results in lots of redundant result sets.
+adjacent(ID1, ID2) :- square(ID1,_,_,_,_,_),
+                      square(ID2,_,_,_,_,_),
+                      in(ID1,V1,V2),
+                      in(ID2,V1,V2),
+                      ID1 != ID2,
+                      not adjacent(ID2, ID1).
 
 % TODO
-same_region(ID1, ID2) :- adjacent(ID1, ID2), not separate(ID1, ID2), ID1 != ID2.
-same_region(ID1, ID3) :- same_region(ID1, ID2), same_region(ID2, ID3), ID1 != ID3.
+same_region(ID1, ID2) :- not separate(ID1, ID2),
+                         ID1 != ID2,
+                         square(ID1,_,_,_,_,_),
+                         square(ID2,_,_,_,_,_).
+same_region(ID1, ID3) :- adjacent(ID1, ID2),
+                         adjacent(ID2, ID3),
+                         not separate(ID1, ID2),
+                         not separate(ID2, ID3).
 
 %#show square/6.
 %#show separate/2.
-%#show same_region/2.
-%#show edge/2.
+#show same_region/2.
+#show edge/2.
 %#show connected/1.
-#show vertex/1.
-#show max/1.
+#show adjacent/2.
+
