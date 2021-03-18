@@ -182,3 +182,29 @@ def test_edge_correctness(clingo_output):
 
 def test_edge_completeness():
     pass
+
+
+def generate_test_edges(n):
+    """ Generates a set of test edges of size n x n. """
+    edges = []
+    vertices = list(range(0, n * n))
+    print(f"Vertices: {vertices}")
+    for v in vertices:
+        start = v
+
+        # symmetrical incremental edges
+        if start + 1 in vertices and (start + 1) % n != 0:
+            edges.append((start, start + 1))
+        if start - 1 in vertices and start % n != 0:
+            edges.append((start, start - 1))
+
+        # edges moving 'up' or 'down' the grid
+        if start + n in vertices:
+            edges.append((start, start + n))
+        if start - n in vertices:
+            edges.append((start, start - n))
+
+    # remove dups
+    edges = list(set(edges))
+
+    return edges
