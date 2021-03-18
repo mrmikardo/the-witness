@@ -1,4 +1,4 @@
-vertex(0). vertex(1). vertex(2). vertex(3). vertex(4). vertex(5). vertex(6). vertex(7). vertex(8).
+vertex(0..16).
 
 connected(Y) :- edge(X, Y), connected(X).
 connected(0).
