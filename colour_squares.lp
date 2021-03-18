@@ -10,6 +10,7 @@ connected(0).
     not edge(Y, X),
     connected(X).
 
+% symmetry-breaker for edge/2.
 Y1 == Y2 :- edge(X1, Y1), edge(X2, Y2), X1 == X2.
 
 % achieved: break crossing from "left edge" of grid
