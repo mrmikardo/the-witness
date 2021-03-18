@@ -1,5 +1,6 @@
 import os
 import re
+from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Tuple
@@ -29,13 +30,25 @@ class SearchResult:
         """ Returns a count of all the atoms (predicates). """
         return len(self.atoms)
 
-    def get_predicate_count_total(self) -> int:
+    @property
+    def predicate_count_total(self) -> int:
         """ Returns a count of different predicates. """
-        pass
+        return len(set(self.atoms))
 
-    def get_predicates_to_counts(self) -> Dict[str, int]:
+    def _get_predicate_names(self):
+        """ Returns only the *names* of predicates (no terms). """
+        predicate_names = []
+        for atom in self.atoms:
+            predicate_names.append(atom.split("(")[0])
+        return predicate_names
+
+    @property
+    def predicate_counts(self) -> Dict[str, int]:
         """ Returns a mapping from predicates to counts. """
-        pass
+        predicate_counts = defaultdict(int)
+        for pred in self._get_predicate_names():
+            predicate_counts[pred] += 1
+        return predicate_counts
 
     @property
     def edges(self) -> List[Tuple[int]]:
@@ -58,7 +71,7 @@ def _parse_search_result(sr, ix):
 @pytest.fixture
 def clingo_output():
     search_results = []
-    with open(os.path.join(CLINGO_OUTPUT_DIR, "output_1")) as f:
+    with open(os.path.join(CLINGO_OUTPUT_DIR, "output_5")) as f:
         lines = f.readlines()
         for i, line in enumerate(lines):
             if line.startswith("Answer:"):
