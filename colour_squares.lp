@@ -37,3 +37,12 @@ adjacent(ID1, ID2, V1_3, V1_4) :- V1_3 == V2_2,
                                   square(ID1,V1_1,V1_2,V1_3,V1_4,_),
                                   square(ID2,V2_1,V2_2,V2_3,V2_4,_),
                                   ID1 != ID2.
+
+% achieved: 2 square are in the same region of the grid
+% if they are adjacent and not separated by an edge.
+same_region(ID1, ID2) :- adjacent(ID1,ID2,_,_), not separate(ID1, ID2).
+same_region(ID1, ID2) :- same_region(ID1,ID3), same_region(ID3,ID2).
+
+C1 == C2:- same_region(ID1, ID2),
+           square(ID1,_,_,_,_,C1),
+           square(ID2,_,_,_,_,C2).
