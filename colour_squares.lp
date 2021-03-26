@@ -16,9 +16,9 @@ Y1 == Y2 :- edge(X1, Y1), edge(X2, Y2), X1 == X2.
 :- edge(X, Y), X \ gridsize == 0, X - Y == 1.
 :- edge(X, Y), Y \ gridsize == 0, Y - X == 1.
 
-% achieved: a valid answer set must terminate at vertex 8.
-:- not connected(8).
-:- edge(8, Y).
+% achieved: a valid answer set must terminate at the maximum vertex.
+:- not connected(maxvertex).
+:- edge(maxvertex, Y).
 
 % achieved: 2 square are separate if they are adjacent and an edge
 % connects the adjacent vertices.
